@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AFK Bot Dashboard</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            margin: 0;
+            padding: 20px;
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected {
+            background-color: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+        }
+        
+        .status-disconnected {
+            background-color: #f44336;
+            box-shadow: 0 0 10px #f44336;
+        }
+        
+        .status-reconnecting {
+            background-color: #ff9800;
+            box-shadow: 0 0 10px #ff9800;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log-timestamp {
+            color: #888;
+        }
+        
+        .log-module {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .info-label {
+            display: block;
+            font-size: 12px;
+            opacity: 0.7;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AFK Bot Dashboard</h1>
+        </div>
+        
+        <div class="status-card">
+            <h2>
+                <span id="statusIndicator" class="status-indicator status-disconnected"></span>
+                Bot Status: <span id="statusText">Disconnected</span>
+            </h2>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Username</span>
+                    <div class="info-value" id="username">-</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Uptime</span>
+                    <div class="info-value" id="uptime">-</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Last Activity</span>
+                    <div class="info-value" id="lastActivity">-</div>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Total Actions</span>
+                    <div class="info-value" id="totalActions">0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-card">
+            <h3>📋 Activity Log</h3>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry">Waiting for bot to start...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let startTime = null;
+        let totalActions = 0;
+        let lastActivityTime = null;
+        
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const username = document.getElementById('username');
+        const uptime = document.getElementById('uptime');
+        const lastActivity = document.getElementById('lastActivity');
+        const totalActionsEl = document.getElementById('totalActions');
+        const logContainer = document.getElementById('logContainer');
+        
+        function updateStatus(data) {
+            if (data.connected) {
+                statusIndicator.className = 'status-indicator status-connected';
+                statusText.textContent = 'Connected';
+                username.textContent = data.username || '-';
+                if (!startTime) startTime = new Date();
+            } else if (data.reconnecting) {
+                statusIndicator.className = 'status-indicator status-reconnecting';
+                statusText.textContent = 'Reconnecting...';
+            } else {
+                statusIndicator.className = 'status-indicator status-disconnected';
+                statusText.textContent = 'Disconnected';
+                username.textContent = '-';
+                startTime = null;
+            }
+        }
+        
+        function addLogEntry(log) {
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            
+            const timestamp = new Date(log.timestamp).toLocaleTimeString();
+            entry.innerHTML = `
+                <span class="log-timestamp">[${timestamp}]</span>
+                <span class="log-module">[${log.module}]</span>
+                ${log.message}
+            `;
+            
+            logContainer.appendChild(entry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // Keep only last 100 log entries
+            while (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+            
+            // Update activity tracking
+            if (log.module === 'Action') {
+                totalActions++;
+                lastActivityTime = new Date();
+                totalActionsEl.textContent = totalActions;
+            }
+        }
+        
+        function updateUptime() {
+            if (startTime) {
+                const now = new Date();
+                const diff = now - startTime;
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                uptime.textContent = `${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                uptime.textContent = '-';
+            }
+            
+            if (lastActivityTime) {
+                const now = new Date();
+                const diff = now - lastActivityTime;
+                const seconds = Math.floor(diff / 1000);
+                if (seconds < 60) {
+                    lastActivity.textContent = `${seconds}s ago`;
+                } else {
+                    const minutes = Math.floor(seconds / 60);
+                    lastActivity.textContent = `${minutes}m ago`;
+                }
+            }
+        }
+        
+        // Socket events
+        socket.on('status', updateStatus);
+        socket.on('log', addLogEntry);
+        
+        // Update uptime every second
+        setInterval(updateUptime, 1000);
+        
+        // Ping server every 30 seconds to check status
+        setInterval(() => {
+            socket.emit('ping');
+        }, 30000);
+        
+        socket.on('pong', updateStatus);
+    </script>
+</body>
+</html>
