@@ -2,10 +2,10 @@
   "name": "minecraft-afk-bot",
   "version": "1.0.0",
   "description": "24/7 Minecraft AFK Bot with Dashboard",
-  "main": "bot.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "dependencies": {
     "mineflayer": "^4.29.0",
