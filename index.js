@@ -6,6 +6,7 @@ const express = require('express');
 const http = require('http');
 const socketio = require('socket.io');
 const path = require('path');
+const { Vec3 } = require('vec3'); // <-- Add this line
 
 // --- Config ---
 const config = {
@@ -124,7 +125,8 @@ async function performMovement() {
     // Find safe Y level
     let targetY = spawnPoint.y;
     for (let dy = 3; dy >= -5; dy--) {
-      const block = botInstance.blockAt({ x: targetX, y: spawnPoint.y + dy, z: targetZ });
+      // Use Vec3 for blockAt
+      const block = botInstance.blockAt(new Vec3(targetX, spawnPoint.y + dy, targetZ));
       if (block && block.name !== 'air' && block.name !== 'water' && block.name !== 'lava') {
         targetY = spawnPoint.y + dy + 1;
         break;
