@@ -202,7 +202,7 @@ function createBot() {
     movements.allowFreeMotion = false;
     movements.allowParkour = true;
     movements.allowSprinting = true;
-    movements.scafoldingBlocks = [];
+    movements.scaffoldingBlocks = [];
     botInstance.pathfinder.setMovements(movements);
     
     log('Bot', `Spawn point set: (${Math.round(spawnPoint.x)}, ${Math.round(spawnPoint.y)}, ${Math.round(spawnPoint.z)})`);
