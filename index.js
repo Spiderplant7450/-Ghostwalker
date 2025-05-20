@@ -48,7 +48,7 @@ app.get('/api/status', (_, res) => {
   });
 });
 
-server.listen(config.webPort, () => {
+server.listen(config.webPort, '0.0.0.0', () => {
   log('Server', `Dashboard running on port ${config.webPort}`);
 });
 
