@@ -178,14 +178,17 @@ function createBot() {
   
   log('Bot', 'Creating new bot instance...');
   
-  botInstance = mineflayer.createBot({
-    host: config.host,
-    port: config.port,
-    username: config.username,
-    password: config.password,
-    version: config.version
-  });
-
+ botInstance = mineflayer.createBot({
+  host: config.host,
+  port: config.port,
+  username: config.username,
+  version: config.version,
+  auth: "offline", // Important: must be offline for custom skin
+  textures: {
+    value: "ewogICJ0aW1lc3RhbXAiIDogMTcwNDg3MjAyMDEzMywKICAicHJvZmlsZUlkIiA6ICI5NTE3OTkxNjljYzE0MGY1OGM2MmRjOGZmZTU3NjBiZCIsCiAgInByb2ZpbGVOYW1lIiA6ICJZdWFyaWciLAogICJzaWduYXR1cmVSZXF1aXJlZCIgOiB0cnVlLAogICJ0ZXh0dXJlcyIgOiB7CiAgICAiU0tJTiIgOiB7CiAgICAgICJ1cmwiIDogImh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvNzM4NjRlYTc4OWY2ZDVlZGU0M2ZhMTZkZGU3ZThlZTVjYjc2Mjg4NWU5OGIwODI3YzRiN2RkNDFkZjVlNzE2YiIKICAgIH0KICB9Cn0=",
+    signature: "qAW2db/9UOA/fGW8lJuFGqACsYW8vLvzohzh+9P1NhgFVWP9omdWoAg/6Tdy846T0Ip74KplDyXUUOJi7LlZbwTsU0o+KbtdDahWyOf3nvVKfSI3diL18129kKcM2o+eQ6aMR+1BE7SlZkNr97t4BApm3nlHLotb5p4rfuANXOSB0eUZIU0JpuqU7JRzaMlbS8RuqeC1C0FLYwXEp9RSt/OYuMP4fVtjpv3/TqWbyuD46rT4ck1TdZnWU/dGg2yIIBqvKJv+JsYH+bbs701tlnN+drXkJ8AKxQU3V9YmBkBX89TmFMaOk8ignW6ujMSEBVNzkcr5QsS9oywXIs7bDOuBwbChGpZQLWTK163JmscFXD2ZAXX19lTnywZZ2x5w5iqXF0M9YPR8whopRo0/6+ZBXqZmc/qYVjpA7g/y2xVAc3vbcrk2Ih77IwSVFByFFVFmKWrZhcLsHKYseggmSLywPtF7qOSS+hhsXVZjqVaQI4PceD6o3yRK8rvReCy7IaopAGl9NxQ2HntmPt9XpsyQUsySIQYqBR6Sb9ZgX0pKPUdVvWCKgZkQz4UHrnes+IcpkAYmRD7kswx+RtD57pmhv2VffBYZMpZMfJ69KZD2mKbC/yJdOZ4U24JhE3AA3W1wNf0ZSw2gJ6lsfD5TJtNHS/Hq4ZnytKUwh3+VypQ="
+  }
+});
   botInstance.loadPlugin(pathfinder);
 
   botInstance.once('login', () => {
