@@ -205,6 +205,7 @@ function createBot() {
     movements.allowParkour = true;
     movements.allowSprinting = true;
     movements.scaffoldingBlocks = [];
+    movements.canDig = false; 
     botInstance.pathfinder.setMovements(movements);
     
     log('Bot', `Spawn point set: (${Math.round(spawnPoint.x)}, ${Math.round(spawnPoint.y)}, ${Math.round(spawnPoint.z)})`);
